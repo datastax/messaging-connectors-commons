@@ -42,9 +42,9 @@ import com.datastax.oss.dsbulk.tests.simulacron.SimulacronUtils.Table;
 import com.datastax.oss.dsbulk.tests.simulacron.annotations.SimulacronConfig;
 import com.datastax.oss.simulacron.common.request.Query;
 import com.datastax.oss.simulacron.server.BoundCluster;
-import com.datastax.oss.sink.pulsar.CassandraSinkTask;
 import com.datastax.oss.sink.pulsar.GenericRecordImpl;
 import com.datastax.oss.sink.pulsar.PulsarRecordImpl;
+import com.datastax.oss.sink.pulsar.RecordCassandraSinkTask;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -104,7 +104,7 @@ class SimpleEndToEndSimulacronIT {
   private final BoundCluster simulacron;
   private final SimulacronUtils.Keyspace schema;
   private final List<Map<String, Object>> taskConfigs = new ArrayList<>();
-  private final CassandraSinkTask task;
+  private final RecordCassandraSinkTask task;
   private final LogInterceptor logs;
   private final Map<String, Object> connectorProperties;
   private final String hostname;
@@ -126,7 +126,7 @@ class SimpleEndToEndSimulacronIT {
     hostname = node.getHostName();
     port = Integer.toString(node.getPort());
 
-    task = new CassandraSinkTask();
+    task = new RecordCassandraSinkTask();
 
     schema =
         new SimulacronUtils.Keyspace(

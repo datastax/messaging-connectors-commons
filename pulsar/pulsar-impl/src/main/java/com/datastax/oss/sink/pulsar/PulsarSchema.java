@@ -30,15 +30,15 @@ import org.slf4j.LoggerFactory;
 /** Datatype. */
 public class PulsarSchema implements AbstractSchema {
 
-  private static final PulsarSchema INT8 = new PulsarSchema(AbstractSchema.Type.INT8);
-  private static final PulsarSchema INT16 = new PulsarSchema(AbstractSchema.Type.INT16);
-  private static final PulsarSchema INT32 = new PulsarSchema(AbstractSchema.Type.INT32);
-  private static final PulsarSchema INT64 = new PulsarSchema(AbstractSchema.Type.INT64);
-  private static final PulsarSchema FLOAT32 = new PulsarSchema(AbstractSchema.Type.FLOAT32);
-  private static final PulsarSchema FLOAT64 = new PulsarSchema(AbstractSchema.Type.FLOAT64);
-  private static final PulsarSchema BOOLEAN = new PulsarSchema(AbstractSchema.Type.BOOLEAN);
-  private static final PulsarSchema STRING = new PulsarSchema(AbstractSchema.Type.STRING);
-  private static final PulsarSchema BYTES = new PulsarSchema(AbstractSchema.Type.BYTES);
+  public static final PulsarSchema INT8 = new PulsarSchema(AbstractSchema.Type.INT8);
+  public static final PulsarSchema INT16 = new PulsarSchema(AbstractSchema.Type.INT16);
+  public static final PulsarSchema INT32 = new PulsarSchema(AbstractSchema.Type.INT32);
+  public static final PulsarSchema INT64 = new PulsarSchema(AbstractSchema.Type.INT64);
+  public static final PulsarSchema FLOAT32 = new PulsarSchema(AbstractSchema.Type.FLOAT32);
+  public static final PulsarSchema FLOAT64 = new PulsarSchema(AbstractSchema.Type.FLOAT64);
+  public static final PulsarSchema BOOLEAN = new PulsarSchema(AbstractSchema.Type.BOOLEAN);
+  public static final PulsarSchema STRING = new PulsarSchema(AbstractSchema.Type.STRING);
+  public static final PulsarSchema BYTES = new PulsarSchema(AbstractSchema.Type.BYTES);
 
   private static final Logger log = LoggerFactory.getLogger(PulsarSchema.class);
 

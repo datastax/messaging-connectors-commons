@@ -31,18 +31,10 @@ import org.apache.pulsar.client.api.schema.GenericRecord;
 import org.apache.pulsar.functions.api.Record;
 import org.apache.pulsar.io.core.Sink;
 import org.apache.pulsar.io.core.SinkContext;
-import org.apache.pulsar.io.core.annotations.Connector;
-import org.apache.pulsar.io.core.annotations.IOType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Connector(
-  name = "dssc-simple",
-  type = IOType.SINK,
-  help = "DataStax Pulsar Sink is used for moving messages from Pulsar to Cassandra",
-  configClass = PulsarSinkConfig.class
-)
-public class CassandraSinkTask implements Sink<GenericRecord> {
+public class CassandraSinkTask<T> implements Sink<T> {
 
   private static final String APPLICATION_NAME = "DataStax Pulsar Connector";
   private static final Logger log = LoggerFactory.getLogger(CassandraSinkTask.class);
@@ -126,14 +118,19 @@ public class CassandraSinkTask implements Sink<GenericRecord> {
   }
 
   @Override
-  public void write(Record<GenericRecord> record) throws Exception {
+  public void write(Record<T> record) throws Exception {
     if (log.isDebugEnabled()) {
       log.debug("write {}", record);
-      GenericRecord value = record.getValue();
-      for (Field field : value.getFields()) {
-        Object v = value.getField(field);
-        String clazz = v != null ? v.getClass().toGenericString() : "";
-        log.debug("field {} value {} class {}", field, v, clazz);
+      Object rawvalue = record.getValue();
+      if (rawvalue instanceof GenericRecord) {
+        GenericRecord value = (GenericRecord) rawvalue;
+        for (Field field : value.getFields()) {
+          Object v = value.getField(field);
+          String clazz = v != null ? v.getClass().toGenericString() : "";
+          log.debug("field {} value {} class {}", field, v, clazz);
+        }
+      } else {
+        log.debug("write {}", rawvalue);
       }
     }
 
@@ -141,7 +138,7 @@ public class CassandraSinkTask implements Sink<GenericRecord> {
     processor.put(Collections.singleton(pulsarSinkRecordImpl));
   }
 
-  PulsarSinkRecordImpl buildRecordImpl(Record<GenericRecord> record) {
+  PulsarSinkRecordImpl buildRecordImpl(Record<?> record) {
     // TODO: batch records, in Kafka the system sends batches, here we
     // are procesing only one record at a time
     PulsarSchema schema = schemaRegistry.ensureAndUpdateSchema(record);

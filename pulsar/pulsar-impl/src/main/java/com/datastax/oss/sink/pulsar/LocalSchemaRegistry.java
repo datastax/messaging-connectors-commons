@@ -27,13 +27,13 @@ public class LocalSchemaRegistry {
 
   private final ConcurrentHashMap<String, PulsarSchema> registry = new ConcurrentHashMap<>();
 
-  public PulsarSchema ensureAndUpdateSchema(Record<GenericRecord> struct) {
+  public PulsarSchema ensureAndUpdateSchema(Record<?> struct) {
     String path = computeRecordSchemaPath(struct);
     // for nested structures we are going to add the name of the field
     return ensureAndUpdateSchema(path, struct.getValue());
   }
 
-  public static String computeRecordSchemaPath(Record<GenericRecord> struct) {
+  public static String computeRecordSchemaPath(Record<?> struct) {
     String schemaDef = "?";
     // versions of Pulsar prior to 2.6.3 do not report schema information
     if (struct.getSchema() != null && struct.getSchema().getSchemaInfo() != null) {
@@ -44,15 +44,21 @@ public class LocalSchemaRegistry {
     return path;
   }
 
-  public PulsarSchema ensureAndUpdateSchema(String path, GenericRecord struct) {
-    PulsarSchema res =
-        registry.computeIfAbsent(
-            path,
-            s -> {
-              return PulsarSchema.createFromStruct(path, struct, this);
-            });
-    // need to recover nulls from previous records
-    res.update(path, struct, this);
-    return res;
+  public PulsarSchema ensureAndUpdateSchema(String path, Object value) {
+    if (value instanceof GenericRecord) {
+      GenericRecord struct = (GenericRecord) value;
+      PulsarSchema res =
+          registry.computeIfAbsent(
+              path,
+              s -> {
+                return PulsarSchema.createFromStruct(path, struct, this);
+              });
+      // need to recover nulls from previous records
+      res.update(path, struct, this);
+      return res;
+    } else {
+      // primitive values
+      return registry.computeIfAbsent(path, s -> PulsarSchema.of(path, value, this));
+    }
   }
 }

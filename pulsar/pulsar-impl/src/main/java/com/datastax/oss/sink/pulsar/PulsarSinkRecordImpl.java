@@ -23,12 +23,12 @@ import org.apache.pulsar.functions.api.Record;
 
 /** @author enrico.olivelli */
 public class PulsarSinkRecordImpl implements AbstractSinkRecord {
-  private final Record<GenericRecord> record;
+  private final Record<?> record;
   private final PulsarSchema schema;
   private final LocalSchemaRegistry schemaRegistry;
 
   public PulsarSinkRecordImpl(
-      Record<GenericRecord> record, PulsarSchema schema, LocalSchemaRegistry schemaRegistry) {
+      Record<?> record, PulsarSchema schema, LocalSchemaRegistry schemaRegistry) {
     this.record = record;
     this.schema = schema;
     this.schemaRegistry = schemaRegistry;
@@ -46,7 +46,11 @@ public class PulsarSinkRecordImpl implements AbstractSinkRecord {
 
   @Override
   public Object value() {
-    return PulsarStruct.ofRecord(record, schemaRegistry);
+    if (record.getValue() instanceof GenericRecord) {
+      return PulsarStruct.ofRecord((Record<GenericRecord>) record, schemaRegistry);
+    } else {
+      return record.getValue();
+    }
   }
 
   @Override
@@ -59,7 +63,7 @@ public class PulsarSinkRecordImpl implements AbstractSinkRecord {
     return shortTopic(record);
   }
 
-  public Record<GenericRecord> getRecord() {
+  public Record<?> getRecord() {
     return record;
   }
 
