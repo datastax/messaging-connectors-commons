@@ -70,7 +70,6 @@ def buildAndExecuteTests() {
 
 def recordTestResults() {
   junit testResults: '**/target/surefire-reports/TEST-*.xml', allowEmptyResults: false
-  junit testResults: '**/target/failsafe-reports/TEST-*.xml', allowEmptyResults: false
 }
 
 def recordCodeCoverage() {
