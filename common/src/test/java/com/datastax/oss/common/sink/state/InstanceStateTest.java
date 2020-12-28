@@ -16,8 +16,8 @@
 package com.datastax.oss.common.sink.state;
 
 import static com.datastax.oss.common.sink.config.TableConfig.MAPPING_OPT;
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -92,7 +92,7 @@ class InstanceStateTest {
     instanceState.incrementRecordCounter("t1", "ks.tb", 1);
 
     // then
-    assertThat(instanceState.getRecordCounter("t1", "ks.tb").getCount()).isEqualTo(1);
+    assertEquals(instanceState.getRecordCounter("t1", "ks.tb"), 1);
 
     // when create new instanceState
     InstanceState instanceState2 =
@@ -103,6 +103,6 @@ class InstanceStateTest {
             metricRegistry);
 
     // then metrics should not reset
-    assertThat(instanceState2.getRecordCounter("t1", "ks.tb").getCount()).isEqualTo(1);
+    assertEquals(instanceState2.getRecordCounter("t1", "ks.tb"), 1);
   }
 }

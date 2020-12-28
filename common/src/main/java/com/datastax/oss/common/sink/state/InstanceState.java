@@ -16,7 +16,6 @@
 package com.datastax.oss.common.sink.state;
 
 import com.codahale.metrics.Histogram;
-import com.codahale.metrics.Meter;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.jmx.JmxReporter;
 import com.datastax.oss.common.sink.AbstractSinkTask;
@@ -161,6 +160,44 @@ public class InstanceState {
   }
 
   @NonNull
+  @VisibleForTesting
+  public HistogramSummary getBatchSizeHistogramSummary(String topicName, String keyspaceAndTable) {
+    return new HistogramSummary(getTopicState(topicName).getBatchSizeHistogram(keyspaceAndTable));
+  }
+
+  @NonNull
+  @VisibleForTesting
+  public HistogramSummary getBatchSizeInBytesHistogramSummary(
+      String topicName, String keyspaceAndTable) {
+    return new HistogramSummary(
+        getTopicState(topicName).getBatchSizeInBytesHistogram(keyspaceAndTable));
+  }
+
+  public static class HistogramSummary {
+    private final long count;
+    private final long min;
+    private final long max;
+
+    private HistogramSummary(Histogram histogram) {
+      this.count = histogram.getCount();
+      this.min = histogram.getSnapshot().getMin();
+      this.max = histogram.getSnapshot().getMax();
+    }
+
+    public long getCount() {
+      return count;
+    }
+
+    public long getMin() {
+      return min;
+    }
+
+    public long getMax() {
+      return max;
+    }
+  }
+
+  @NonNull
   public Executor getMappingExecutor() {
     return mappingExecutor;
   }
@@ -179,13 +216,13 @@ public class InstanceState {
   }
 
   @VisibleForTesting
-  public Meter getRecordCounter(String topicName, String keyspaceAndTable) {
-    return getTopicState(topicName).getRecordCountMeter(keyspaceAndTable);
+  public long getRecordCounter(String topicName, String keyspaceAndTable) {
+    return getTopicState(topicName).getRecordCountMeter(keyspaceAndTable).getCount();
   }
 
   @VisibleForTesting
-  public Meter getFailedRecordCounter(String topicName, String keyspaceAndTable) {
-    return getTopicState(topicName).getFailedRecordCounter(keyspaceAndTable);
+  public long getFailedRecordCounter(String topicName, String keyspaceAndTable) {
+    return getTopicState(topicName).getFailedRecordCounter(keyspaceAndTable).getCount();
   }
 
   public void incrementFailedWithUnknownTopicCounter() {
@@ -193,8 +230,8 @@ public class InstanceState {
   }
 
   @VisibleForTesting
-  public Meter getFailedWithUnknownTopicCounter() {
-    return globalSinkMetrics.getFailedRecordsWithUnknownTopicCounter();
+  public long getFailedWithUnknownTopicCounter() {
+    return globalSinkMetrics.getFailedRecordsWithUnknownTopicCounter().getCount();
   }
 
   @NonNull
