@@ -5,7 +5,7 @@ def initializeEnvironment() {
   env.GITHUB_PROJECT_URL = "https://${GIT_URL.replaceFirst(/(git@|http:\/\/|https:\/\/)/, '').replace(':', '/').replace('.git', '')}"
   env.GITHUB_BRANCH_URL = "${GITHUB_PROJECT_URL}/tree/${env.BRANCH_NAME}"
   env.GITHUB_COMMIT_URL = "${GITHUB_PROJECT_URL}/commit/${env.GIT_COMMIT}"
-  env.BLUE_OCEAN_URL = "${JENKINS_URL}/blue/organizations/jenkins/tools%2Fkafka/detail/${BRANCH_NAME}/${BUILD_NUMBER}"
+  env.BLUE_OCEAN_URL = "${JENKINS_URL}/blue/organizations/jenkins/tools%2Fmessaging_connectors_common/detail/${BRANCH_NAME}/${BUILD_NUMBER}"
 
   env.MAVEN_HOME = "${env.HOME}/.mvn/apache-maven-3.2.5"
   env.PATH = "${env.MAVEN_HOME}/bin:${env.PATH}"
@@ -82,9 +82,6 @@ def recordCodeCoverage() {
 }
 
 def recordArtifacts() {
-  if (params.GENERATE_DISTRO && env.CASSANDRA_VERSION.startsWith("3.11")) {
-    archiveArtifacts artifacts: 'dist/target/kafka-connect-cassandra-sink-*.tar.gz', fingerprint: true
-  }
 }
 
 def notifySlack(status = 'started') {
@@ -142,7 +139,7 @@ def notifySlack(status = 'started') {
   } else if (status == 'failed') {
     color = 'danger' // Red
   }
-
+  //TODO: use specific slack channel
   slackSend channel: "#kafka-connector",
             message: "${message}",
             color: "${color}"
