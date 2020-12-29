@@ -143,6 +143,9 @@ def notifySlack(status = 'started') {
   slackSend channel: "#kafka-connector",
             message: "${message}",
             color: "${color}"
+  slackSend channel: "#pulsar-connector",
+            message: "${message}",
+            color: "${color}"
 }
 
 // branch pattern for cron
