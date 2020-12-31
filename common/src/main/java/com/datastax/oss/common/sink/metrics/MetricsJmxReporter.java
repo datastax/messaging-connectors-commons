@@ -28,12 +28,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class MetricsJmxReporter {
-  private static final String CONNECTOR_DOMAIN = "com.datastax.oss.kafka.sink";
   private static final Logger log = LoggerFactory.getLogger(MetricsJmxReporter.class);
 
-  public static JmxReporter createJmxReporter(String instanceName, MetricRegistry metricRegistry) {
+  public static JmxReporter createJmxReporter(
+      String instanceName, String connectorDomain, MetricRegistry metricRegistry) {
     return JmxReporter.forRegistry(metricRegistry)
-        .inDomain(CONNECTOR_DOMAIN)
+        .inDomain(connectorDomain)
         .createsObjectNamesWith(
             (ignore, jmxDomain, metricName) -> getObjectName(instanceName, jmxDomain, metricName))
         .build();

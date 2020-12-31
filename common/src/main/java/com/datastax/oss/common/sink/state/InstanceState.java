@@ -84,7 +84,9 @@ public class InstanceState {
 
     topicStates.values().forEach(ts -> ts.initializeMetrics(metricRegistry));
     globalSinkMetrics = new GlobalSinkMetrics(metricRegistry);
-    reporter = MetricsJmxReporter.createJmxReporter(config.getInstanceName(), metricRegistry);
+    reporter =
+        MetricsJmxReporter.createJmxReporter(
+            config.getInstanceName(), config.getJmxConnectorDomain(), metricRegistry);
 
     if (config.getJmx()) {
       reporter.start();

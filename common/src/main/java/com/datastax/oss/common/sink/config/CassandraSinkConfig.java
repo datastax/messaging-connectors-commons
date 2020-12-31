@@ -81,6 +81,8 @@ public class CassandraSinkConfig {
   public static final String CONNECTION_POOL_LOCAL_SIZE_DEFAULT = "4";
 
   static final String JMX_OPT = "jmx";
+  public static final String JMX_CONNECTOR_DOMAIN_OPT = "jmxConnectorDomain";
+  private static final String JMX_CONNECTOR_DOMAIN_OPT_DEFAULT = "com.datastax.oss.kafka.sink";
   static final String COMPRESSION_OPT = "compression";
   static final String COMPRESSION_DRIVER_SETTING =
       withDriverPrefix(DefaultDriverOption.PROTOCOL_COMPRESSION);
@@ -141,6 +143,12 @@ public class CassandraSinkConfig {
               true,
               ConfigDef.Importance.HIGH,
               "Whether to enable JMX reporting")
+          .define(
+              JMX_CONNECTOR_DOMAIN_OPT,
+              ConfigDef.Type.STRING,
+              JMX_CONNECTOR_DOMAIN_OPT_DEFAULT,
+              ConfigDef.Importance.LOW,
+              "Domain for JMX reporting")
           .define(
               COMPRESSION_OPT,
               ConfigDef.Type.STRING,
@@ -514,6 +522,10 @@ public class CassandraSinkConfig {
 
   public boolean getJmx() {
     return globalConfig.getBoolean(JMX_OPT);
+  }
+
+  public String getJmxConnectorDomain() {
+    return globalConfig.getString(JMX_CONNECTOR_DOMAIN_OPT);
   }
 
   public boolean isCloud() {
