@@ -647,10 +647,10 @@ limitations under the License.]]></inlineHeader>
     </repository>
   </repositories>
   <distributionManagement>
+    <!-- releases go to Maven central -->
     <repository>
-      <id>datastax-releases-local</id>
-      <name>DataStax Local Releases</name>
-      <url>https://repo.sjc.dsinternal.org/artifactory/datastax-releases-local/</url>
+      <id>ossrh</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
     </repository>
     <snapshotRepository>
       <id>datastax-snapshots-local</id>
