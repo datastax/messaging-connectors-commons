@@ -606,7 +606,6 @@ limitations under the License.]]></inlineHeader>
                 <goals>
                   <goal>jar</goal>
                 </goals>
-                <phase>package</phase>
               </execution>
             </executions>
           </plugin>
@@ -620,7 +619,6 @@ limitations under the License.]]></inlineHeader>
                 <goals>
                   <goal>jar-no-fork</goal>
                 </goals>
-                <phase>package</phase>
               </execution>
             </executions>
           </plugin>
