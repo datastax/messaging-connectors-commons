@@ -21,7 +21,7 @@ public interface AbstractStruct {
   /**
    * Access a field
    *
-   * @param field
+   * @param field the field to get
    * @return the value of the field, or null
    */
   public Object get(String field);

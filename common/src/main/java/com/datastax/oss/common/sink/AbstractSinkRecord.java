@@ -42,7 +42,7 @@ public interface AbstractSinkRecord {
   /**
    * Reference timestamp.
    *
-   * @return
+   * @return the timestamp
    */
   public Long timestamp();
 

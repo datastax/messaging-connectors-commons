@@ -15,6 +15,7 @@
  */
 package com.datastax.oss.common.sink.record;
 
+import com.datastax.oss.common.sink.AbstractSinkRecord;
 import com.datastax.oss.common.sink.AbstractSinkRecordHeader;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
@@ -23,7 +24,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * The fully parsed {@link SinkRecord} in a form where we can apply mappings of fields to columns.
+ * The fully parsed {@link AbstractSinkRecord} in a form where we can apply mappings of fields to
+ * columns.
  */
 public class KeyValueRecord implements Record {
   @Nullable private final KeyOrValue key;

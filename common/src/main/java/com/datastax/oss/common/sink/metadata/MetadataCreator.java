@@ -49,7 +49,7 @@ public class MetadataCreator {
 
   /**
    * Create a metadata object describing the structure of the given key or value (extracted from a
-   * {@link SinkRecord} and a data object that homogenizes interactions with the given key/value
+   * {@link AbstractStruct} and a data object that homogenizes interactions with the given key/value
    * (e.g. an implementation of {@link KeyOrValue}).
    *
    * @param keyOrValue the key or value

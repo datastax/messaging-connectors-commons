@@ -259,7 +259,7 @@ public abstract class AbstractSinkTask {
   /**
    * Called in case of successful processing.
    *
-   * @param record
+   * @param record the record for which we reported success
    */
   protected void handleSuccess(AbstractSinkRecord record) {}
 

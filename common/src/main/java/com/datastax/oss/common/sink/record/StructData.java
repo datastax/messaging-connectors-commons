@@ -16,6 +16,7 @@
 package com.datastax.oss.common.sink.record;
 
 import com.datastax.oss.common.sink.AbstractField;
+import com.datastax.oss.common.sink.AbstractSinkRecord;
 import com.datastax.oss.common.sink.AbstractStruct;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import java.nio.ByteBuffer;
