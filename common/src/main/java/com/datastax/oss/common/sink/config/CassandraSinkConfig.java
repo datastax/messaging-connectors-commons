@@ -30,6 +30,11 @@ import com.datastax.oss.driver.shaded.guava.common.base.Splitter;
 import com.datastax.oss.driver.shaded.guava.common.collect.ImmutableList;
 import edu.umd.cs.findbugs.annotations.NonNull;
 import edu.umd.cs.findbugs.annotations.Nullable;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.attribute.PosixFilePermissions;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -247,6 +252,7 @@ public class CassandraSinkConfig {
       globalConfig = new AbstractConfig(GLOBAL_CONFIG_DEF, globalSettings, false);
 
       populateDriverSettingsWithConnectorSettings(globalSettings);
+      decodeBase64EncodedSecureBundle(javaDriverSettings);
       boolean cloud = isCloud();
 
       if (!cloud) {
@@ -332,7 +338,6 @@ public class CassandraSinkConfig {
     deprecatedMetricsHighestLatency(connectorSettings);
     deprecatedCompression(connectorSettings);
     deprecatedSecureBundle(connectorSettings);
-
     if (getJmx()) {
       metricsSettings();
     }
@@ -345,6 +350,32 @@ public class CassandraSinkConfig {
         SECURE_CONNECT_BUNDLE_DRIVER_SETTING,
         null,
         Function.identity());
+  }
+
+  static void decodeBase64EncodedSecureBundle(Map<String, String> javaDriverSettings) {
+    // it is very awkward on k8s to pass ZIP files
+    // if the path is base64:xxxx we decode the payload and create
+    // a temporary file
+    // we are setting permissions such that only current user can access the file
+    // the file will be deleted at JVM exit
+    String encoded = javaDriverSettings.get(SECURE_CONNECT_BUNDLE_DRIVER_SETTING);
+    if (encoded != null && encoded.startsWith("base64:")) {
+      try {
+        encoded = encoded.replace("\n", "").replace("\r", "").trim();
+        encoded = encoded.substring("base64:".length());
+        byte[] decoded = Base64.getDecoder().decode(encoded);
+        Path file = Files.createTempFile("cassandra.sink.securebundle", ".zip");
+        Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-------"));
+        file.toFile().deleteOnExit();
+        Files.write(file, decoded);
+        String path = file.toAbsolutePath().toString();
+        log.info("Decoded bundle to temporary file {}", path);
+        javaDriverSettings.put(SECURE_CONNECT_BUNDLE_DRIVER_SETTING, path);
+      } catch (IOException ex) {
+        throw new RuntimeException(
+            "Cannot decode base64 secure bundle and create temporary file: " + ex, ex);
+      }
+    }
   }
 
   private void deprecatedCompression(Map<String, String> connectorSettings) {
@@ -416,6 +447,7 @@ public class CassandraSinkConfig {
     // handle usage of deprecated setting
     if (connectorSettings.containsKey(connectorDeprecatedSetting)) {
       // put or override if setting with datastax-java-driver prefix provided
+      log.info("handling deprecated {}, set as {}", connectorDeprecatedSetting, driverSetting);
       javaDriverSettings.put(
           driverSetting,
           deprecatedValueConverter.apply(connectorSettings.get(connectorDeprecatedSetting)));
