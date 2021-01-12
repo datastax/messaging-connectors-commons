@@ -46,6 +46,7 @@ import static com.datastax.oss.driver.api.core.config.DefaultDriverOption.CONTAC
 import static com.datastax.oss.driver.api.core.config.DefaultDriverOption.METRICS_SESSION_CQL_REQUESTS_INTERVAL;
 import static com.datastax.oss.driver.api.core.config.DefaultDriverOption.METRICS_SESSION_ENABLED;
 import static com.datastax.oss.dsbulk.tests.assertions.TestAssertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -58,11 +59,19 @@ import com.datastax.oss.driver.shaded.guava.common.collect.ImmutableMap;
 import com.datastax.oss.driver.shaded.guava.common.collect.Maps;
 import com.datastax.oss.dsbulk.tests.logging.LogInterceptingExtension;
 import com.datastax.oss.dsbulk.tests.logging.LogInterceptor;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.Base64;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Stream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -668,6 +677,46 @@ class CassandraSinkConfigTest {
     // then
     assertThat(cassandraSinkConfig.getJavaDriverSettings().get(driverSettingName))
         .isEqualTo(expectedDefault);
+  }
+
+  @Test
+  void should_unpack_base64_zip_file_legacy_name() throws Exception {
+    should_unpack_base64_zip_file(SECURE_CONNECT_BUNDLE_OPT);
+  }
+
+  @Test
+  void should_unpack_base64_zip_file() throws Exception {
+    should_unpack_base64_zip_file(SECURE_CONNECT_BUNDLE_DRIVER_SETTING);
+  }
+
+  void should_unpack_base64_zip_file(String entryName) throws Exception {
+    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+    // it is not necessary that we really have a zip file here
+    // but this gives the flavour of the type of content we expect
+    // to be encoded in the secureBundleZip
+    try (ZipOutputStream zip = new ZipOutputStream(buffer)) {
+      zip.putNextEntry(new ZipEntry("file.bin"));
+      zip.write(1234);
+      zip.closeEntry();
+    }
+    byte[] zipFileContents = buffer.toByteArray();
+    String encoded = "base64:" + Base64.getEncoder().encodeToString(zipFileContents);
+    Map<String, String> inputSettings = new HashMap<>();
+    inputSettings.put(entryName, encoded);
+    CassandraSinkConfig cassandraSinkConfig = new CassandraSinkConfig(inputSettings);
+    assertThat(cassandraSinkConfig.isCloud()).isEqualTo(true);
+    Map<String, String> javaDriverSettings = cassandraSinkConfig.getJavaDriverSettings();
+    String path = javaDriverSettings.get(SECURE_CONNECT_BUNDLE_DRIVER_SETTING);
+    File file = new File(path);
+    assertThat(file.isFile()).isEqualTo(true);
+    Set<PosixFilePermission> posixFilePermissions = Files.getPosixFilePermissions(file.toPath());
+    assertThat(posixFilePermissions)
+        .contains(PosixFilePermission.OWNER_READ, PosixFilePermission.OWNER_WRITE);
+    assertThat(posixFilePermissions.size())
+        .as("bad permissions " + posixFilePermissions)
+        .isEqualTo(2);
+    byte[] content = Files.readAllBytes(file.toPath());
+    assertThat(content).isEqualTo(zipFileContents);
   }
 
   @Test
