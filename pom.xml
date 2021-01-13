@@ -21,7 +21,7 @@
   <groupId>com.datastax.oss</groupId>
   <artifactId>messaging-connectors-commons-parent</artifactId>
   <packaging>pom</packaging>
-  <version>1.0.10</version>
+  <version>1.0.11-SNAPSHOT</version>
   <name>DataStax Apache Cassandra (R) Messaging Connectors</name>
   <description>Common utilities for pulling data from Messaging middlewares and inserting into Apache Cassandra (R) or DataStax Enterprise (DSE)</description>
   <url>https://github.com/riptano/messaging-connectors-commons</url>
@@ -675,7 +675,7 @@ limitations under the License.]]></inlineHeader>
     <connection>scm:git:git@github.com:datastax/messaging-connectors-commons.git</connection>
     <developerConnection>scm:git:git@github.com:datastax/messaging-connectors-commons.git</developerConnection>
     <url>https://github.com/datastax/messaging-connectors-commons</url>
-    <tag>1.0.10</tag>
+    <tag>HEAD</tag>
   </scm>
   <developers>
     <developer>
