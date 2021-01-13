@@ -353,7 +353,6 @@ public class CassandraSinkConfig {
   }
 
   static void decodeBase64EncodedSecureBundle(Map<String, String> javaDriverSettings) {
-    // it is very awkward on k8s to pass ZIP files
     // if the path is base64:xxxx we decode the payload and create
     // a temporary file
     // we are setting permissions such that only current user can access the file
@@ -447,7 +446,6 @@ public class CassandraSinkConfig {
     // handle usage of deprecated setting
     if (connectorSettings.containsKey(connectorDeprecatedSetting)) {
       // put or override if setting with datastax-java-driver prefix provided
-      log.info("handling deprecated {}, set as {}", connectorDeprecatedSetting, driverSetting);
       javaDriverSettings.put(
           driverSetting,
           deprecatedValueConverter.apply(connectorSettings.get(connectorDeprecatedSetting)));
