@@ -15,6 +15,11 @@
  */
 package com.datastax.oss.common.sink.config;
 
+import static com.datastax.oss.common.sink.config.AuthenticatorConfig.KEYTAB_OPT;
+import static com.datastax.oss.common.sink.config.SslConfig.KEYSTORE_PATH_OPT;
+import static com.datastax.oss.common.sink.config.SslConfig.OPENSSL_KEY_CERT_CHAIN_OPT;
+import static com.datastax.oss.common.sink.config.SslConfig.OPENSSL_PRIVATE_KEY_OPT;
+import static com.datastax.oss.common.sink.config.SslConfig.TRUSTSTORE_PATH_OPT;
 import static com.datastax.oss.driver.api.core.config.DefaultDriverOption.CONTACT_POINTS;
 import static com.datastax.oss.driver.api.core.config.DefaultDriverOption.METADATA_SCHEMA_REFRESHED_KEYSPACES;
 import static com.datastax.oss.driver.api.core.config.DefaultDriverOption.METRICS_NODE_ENABLED;
@@ -252,7 +257,18 @@ public class CassandraSinkConfig {
       globalConfig = new AbstractConfig(GLOBAL_CONFIG_DEF, globalSettings, false);
 
       populateDriverSettingsWithConnectorSettings(globalSettings);
-      decodeBase64EncodedSecureBundle(javaDriverSettings);
+
+      // for Pulsar Sink we want to make it easy to deploy these files
+      // as simple base64 encoded strings, because there is no
+      // automatic mechanism to distribute files to the workers that
+      // execute the Sink
+      decodeBase64EncodedFile(SECURE_CONNECT_BUNDLE_DRIVER_SETTING, javaDriverSettings);
+      decodeBase64EncodedFile(KEYSTORE_PATH_OPT, sslSettings);
+      decodeBase64EncodedFile(TRUSTSTORE_PATH_OPT, sslSettings);
+      decodeBase64EncodedFile(OPENSSL_PRIVATE_KEY_OPT, sslSettings);
+      decodeBase64EncodedFile(OPENSSL_KEY_CERT_CHAIN_OPT, sslSettings);
+      decodeBase64EncodedFile(KEYTAB_OPT, authSettings);
+
       boolean cloud = isCloud();
 
       if (!cloud) {
@@ -352,27 +368,27 @@ public class CassandraSinkConfig {
         Function.identity());
   }
 
-  static void decodeBase64EncodedSecureBundle(Map<String, String> javaDriverSettings) {
+  static void decodeBase64EncodedFile(String key, Map<String, String> javaDriverSettings) {
     // if the path is base64:xxxx we decode the payload and create
     // a temporary file
     // we are setting permissions such that only current user can access the file
     // the file will be deleted at JVM exit
-    String encoded = javaDriverSettings.get(SECURE_CONNECT_BUNDLE_DRIVER_SETTING);
+    String encoded = javaDriverSettings.get(key);
     if (encoded != null && encoded.startsWith("base64:")) {
       try {
         encoded = encoded.replace("\n", "").replace("\r", "").trim();
         encoded = encoded.substring("base64:".length());
         byte[] decoded = Base64.getDecoder().decode(encoded);
-        Path file = Files.createTempFile("cassandra.sink.securebundle", ".zip");
+        Path file = Files.createTempFile("cassandra.sink.", ".tmp");
         Files.setPosixFilePermissions(file, PosixFilePermissions.fromString("rw-------"));
         file.toFile().deleteOnExit();
         Files.write(file, decoded);
         String path = file.toAbsolutePath().toString();
-        log.info("Decoded bundle to temporary file {}", path);
-        javaDriverSettings.put(SECURE_CONNECT_BUNDLE_DRIVER_SETTING, path);
+        log.info("Decoded {} to temporary file {}", key, path);
+        javaDriverSettings.put(key, path);
       } catch (IOException ex) {
         throw new RuntimeException(
-            "Cannot decode base64 secure bundle and create temporary file: " + ex, ex);
+            "Cannot decode base64 " + key + " and create temporary file: " + ex, ex);
       }
     }
   }

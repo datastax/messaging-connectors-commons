@@ -15,6 +15,7 @@
  */
 package com.datastax.oss.common.sink.config;
 
+import static com.datastax.oss.common.sink.config.AuthenticatorConfig.KEYTAB_OPT;
 import static com.datastax.oss.common.sink.config.CassandraSinkConfig.COMPRESSION_DEFAULT;
 import static com.datastax.oss.common.sink.config.CassandraSinkConfig.COMPRESSION_DRIVER_SETTING;
 import static com.datastax.oss.common.sink.config.CassandraSinkConfig.COMPRESSION_OPT;
@@ -39,13 +40,18 @@ import static com.datastax.oss.common.sink.config.CassandraSinkConfig.SECURE_CON
 import static com.datastax.oss.common.sink.config.CassandraSinkConfig.SECURE_CONNECT_BUNDLE_OPT;
 import static com.datastax.oss.common.sink.config.CassandraSinkConfig.SSL_OPT_PREFIX;
 import static com.datastax.oss.common.sink.config.CassandraSinkConfig.withDriverPrefix;
+import static com.datastax.oss.common.sink.config.SslConfig.KEYSTORE_PATH_OPT;
+import static com.datastax.oss.common.sink.config.SslConfig.OPENSSL_KEY_CERT_CHAIN_OPT;
+import static com.datastax.oss.common.sink.config.SslConfig.OPENSSL_PRIVATE_KEY_OPT;
 import static com.datastax.oss.common.sink.config.SslConfig.PROVIDER_OPT;
+import static com.datastax.oss.common.sink.config.SslConfig.TRUSTSTORE_PATH_OPT;
 import static com.datastax.oss.common.sink.config.TableConfig.MAPPING_OPT;
 import static com.datastax.oss.common.sink.config.TableConfig.getTableSettingPath;
 import static com.datastax.oss.driver.api.core.config.DefaultDriverOption.CONTACT_POINTS;
 import static com.datastax.oss.driver.api.core.config.DefaultDriverOption.METRICS_SESSION_CQL_REQUESTS_INTERVAL;
 import static com.datastax.oss.driver.api.core.config.DefaultDriverOption.METRICS_SESSION_ENABLED;
 import static com.datastax.oss.dsbulk.tests.assertions.TestAssertions.assertThat;
+import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -59,7 +65,6 @@ import com.datastax.oss.driver.shaded.guava.common.collect.ImmutableMap;
 import com.datastax.oss.driver.shaded.guava.common.collect.Maps;
 import com.datastax.oss.dsbulk.tests.logging.LogInterceptingExtension;
 import com.datastax.oss.dsbulk.tests.logging.LogInterceptor;
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
@@ -69,9 +74,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
-import java.util.zip.ZipEntry;
-import java.util.zip.ZipOutputStream;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -680,33 +684,80 @@ class CassandraSinkConfigTest {
   }
 
   @Test
-  void should_unpack_base64_zip_file_legacy_name() throws Exception {
-    should_unpack_base64_zip_file(SECURE_CONNECT_BUNDLE_OPT);
+  void should_unpack_base64_secureBundle_legacy_name() throws Exception {
+    should_unpack_base64_file(
+        SECURE_CONNECT_BUNDLE_OPT,
+        (CassandraSinkConfig config) -> {
+          assertThat(config.isCloud()).isEqualTo(true);
+          return config.getJavaDriverSettings().get(SECURE_CONNECT_BUNDLE_DRIVER_SETTING);
+        });
   }
 
   @Test
-  void should_unpack_base64_zip_file() throws Exception {
-    should_unpack_base64_zip_file(SECURE_CONNECT_BUNDLE_DRIVER_SETTING);
+  void should_unpack_base64_secureBundle() throws Exception {
+    should_unpack_base64_file(
+        SECURE_CONNECT_BUNDLE_DRIVER_SETTING,
+        (CassandraSinkConfig config) -> {
+          assertThat(config.isCloud()).isEqualTo(true);
+          return config.getJavaDriverSettings().get(SECURE_CONNECT_BUNDLE_DRIVER_SETTING);
+        });
   }
 
-  void should_unpack_base64_zip_file(String entryName) throws Exception {
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-    // it is not necessary that we really have a zip file here
-    // but this gives the flavour of the type of content we expect
-    // to be encoded in the secureBundleZip
-    try (ZipOutputStream zip = new ZipOutputStream(buffer)) {
-      zip.putNextEntry(new ZipEntry("file.bin"));
-      zip.write(1234);
-      zip.closeEntry();
-    }
-    byte[] zipFileContents = buffer.toByteArray();
+  @Test
+  void should_unpack_base64_ssl_keystore() throws Exception {
+    should_unpack_base64_file(
+        KEYSTORE_PATH_OPT,
+        (CassandraSinkConfig config) -> {
+          return config.getSslConfig().getKeystorePath().toString();
+        });
+  }
+
+  @Test
+  void should_unpack_base64_ssl_trustore() throws Exception {
+    should_unpack_base64_file(
+        TRUSTSTORE_PATH_OPT,
+        (CassandraSinkConfig config) -> {
+          return config.getSslConfig().getTruststorePath().toString();
+        });
+  }
+
+  @Test
+  void should_unpack_base64_ssl_openssl_private_key() throws Exception {
+    should_unpack_base64_file(
+        OPENSSL_PRIVATE_KEY_OPT,
+        (CassandraSinkConfig config) -> {
+          return config.getSslConfig().getOpenSslPrivateKey().toString();
+        });
+  }
+
+  @Test
+  void should_unpack_base64_ssl_openssl_cert_chain() throws Exception {
+    should_unpack_base64_file(
+        OPENSSL_KEY_CERT_CHAIN_OPT,
+        (CassandraSinkConfig config) -> {
+          return config.getSslConfig().getOpenSslKeyCertChain().toString();
+        });
+  }
+
+  @Test
+  void should_unpack_base64_auth_keytab() throws Exception {
+    should_unpack_base64_file(
+        KEYTAB_OPT,
+        (CassandraSinkConfig config) -> {
+          return config.getAuthenticatorConfig().getKeyTabPath().toString();
+        });
+  }
+
+  void should_unpack_base64_file(
+      String entryName, Function<CassandraSinkConfig, String> parameterAccessor) throws Exception {
+
+    byte[] zipFileContents = "foo".getBytes(UTF_8);
     String encoded = "base64:" + Base64.getEncoder().encodeToString(zipFileContents);
     Map<String, String> inputSettings = new HashMap<>();
     inputSettings.put(entryName, encoded);
     CassandraSinkConfig cassandraSinkConfig = new CassandraSinkConfig(inputSettings);
-    assertThat(cassandraSinkConfig.isCloud()).isEqualTo(true);
-    Map<String, String> javaDriverSettings = cassandraSinkConfig.getJavaDriverSettings();
-    String path = javaDriverSettings.get(SECURE_CONNECT_BUNDLE_DRIVER_SETTING);
+
+    String path = parameterAccessor.apply(cassandraSinkConfig);
     File file = new File(path);
     assertThat(file.isFile()).isEqualTo(true);
     Set<PosixFilePermission> posixFilePermissions = Files.getPosixFilePermissions(file.toPath());
