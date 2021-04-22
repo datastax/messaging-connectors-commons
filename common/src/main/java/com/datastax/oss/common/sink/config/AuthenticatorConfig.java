@@ -37,9 +37,9 @@ public class AuthenticatorConfig extends AbstractConfig {
   public static final String PROVIDER_OPT = "auth.provider";
   public static final String USERNAME_OPT = "auth.username";
   public static final String PASSWORD_OPT = "auth.password";
-  static final String KEYTAB_OPT = "auth.gssapi.keyTab";
-  static final String PRINCIPAL_OPT = "auth.gssapi.principal";
-  static final String SERVICE_OPT = "auth.gssapi.service";
+  public static final String KEYTAB_OPT = "auth.gssapi.keyTab";
+  public static final String PRINCIPAL_OPT = "auth.gssapi.principal";
+  public static final String SERVICE_OPT = "auth.gssapi.service";
 
   private static final Logger log = LoggerFactory.getLogger(AuthenticatorConfig.class);
   private static final ConfigDef CONFIG_DEF =
@@ -83,7 +83,7 @@ public class AuthenticatorConfig extends AbstractConfig {
 
   @Nullable private final Path keyTabPath;
 
-  AuthenticatorConfig(Map<String, String> authSettings) {
+  public AuthenticatorConfig(Map<String, String> authSettings) {
     super(CONFIG_DEF, sanitizeAuthSettings(authSettings), false);
 
     // Verify that the provider value is valid.

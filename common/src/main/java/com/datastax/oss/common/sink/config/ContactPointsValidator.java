@@ -45,7 +45,7 @@ public class ContactPointsValidator {
     }
   }
 
-  private static boolean isInvalidAddress(String contactPoint) {
+  public static boolean isInvalidAddress(String contactPoint) {
     return !InetAddresses.isInetAddress(contactPoint) && !InternetDomainName.isValid(contactPoint);
   }
 }

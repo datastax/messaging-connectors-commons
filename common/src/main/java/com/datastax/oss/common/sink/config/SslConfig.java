@@ -113,7 +113,7 @@ public class SslConfig extends AbstractConfig {
   private final @Nullable Path privateKeyPath;
   private final @Nullable SslContext sslContext;
 
-  SslConfig(Map<String, String> sslSettings) {
+  public SslConfig(Map<String, String> sslSettings) {
     super(CONFIG_DEF, sslSettings, false);
 
     keystorePath = getFilePath(getString(KEYSTORE_PATH_OPT));

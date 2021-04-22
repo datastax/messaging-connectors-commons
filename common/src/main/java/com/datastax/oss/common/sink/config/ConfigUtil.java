@@ -39,7 +39,7 @@ class ConfigUtil {
    * @param settingNames names of settings to extract.
    * @return lines of the form "setting: value".
    */
-  static String configToString(
+  public static String configToString(
       AbstractConfig config, String prefixToExcise, String... settingNames) {
     return Arrays.stream(settingNames)
         .map(
@@ -56,7 +56,7 @@ class ConfigUtil {
    * @param settingValue setting to convert
    * @return the converted path.
    */
-  static @Nullable Path getFilePath(@Nullable String settingValue) {
+  public static @Nullable Path getFilePath(@Nullable String settingValue) {
     return settingValue == null || settingValue.isEmpty()
         ? null
         : Paths.get(settingValue).toAbsolutePath().normalize();
@@ -69,7 +69,7 @@ class ConfigUtil {
    * @param settingName name of setting whose value is filePath; used in generating error messages
    *     for failures.
    */
-  static void assertAccessibleFile(@Nullable Path filePath, String settingName) {
+  public static void assertAccessibleFile(@Nullable Path filePath, String settingName) {
     if (filePath == null) {
       // There's no path to check.
       return;
