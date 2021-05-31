@@ -66,7 +66,7 @@ public class TableConfig extends AbstractConfig {
   private final boolean deletesEnabled;
   private final String query;
 
-  private TableConfig(
+  public TableConfig(
       @NonNull String topicName,
       @NonNull String keyspace,
       @NonNull String table,
