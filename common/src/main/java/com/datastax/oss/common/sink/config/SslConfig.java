@@ -19,6 +19,7 @@ import static com.datastax.oss.common.sink.config.ConfigUtil.configToString;
 import static com.datastax.oss.common.sink.config.ConfigUtil.getFilePath;
 
 import com.datastax.oss.common.sink.ConfigException;
+import com.datastax.oss.driver.shaded.guava.common.annotations.VisibleForTesting;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import io.netty.handler.ssl.SslContext;
 import io.netty.handler.ssl.SslContextBuilder;
@@ -243,11 +244,13 @@ public class SslConfig extends AbstractConfig {
         OPENSSL_PRIVATE_KEY_OPT);
   }
 
-  Path getOpenSslKeyCertChain() {
+  @VisibleForTesting
+  public Path getOpenSslKeyCertChain() {
     return certFilePath;
   }
 
-  Path getOpenSslPrivateKey() {
+  @VisibleForTesting
+  public Path getOpenSslPrivateKey() {
     return privateKeyPath;
   }
 
