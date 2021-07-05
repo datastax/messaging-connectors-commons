@@ -42,7 +42,7 @@ public class AuthenticatorConfig extends AbstractConfig {
   public static final String SERVICE_OPT = "auth.gssapi.service";
 
   private static final Logger log = LoggerFactory.getLogger(AuthenticatorConfig.class);
-  private static final ConfigDef CONFIG_DEF =
+  public static final ConfigDef CONFIG_DEF =
       new ConfigDef()
           .define(
               PROVIDER_OPT,

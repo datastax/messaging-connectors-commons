@@ -51,7 +51,7 @@ public class SslConfig extends AbstractConfig {
   public static final String TRUSTSTORE_PATH_OPT = "ssl.truststore.path";
   static final String CIPHER_SUITES_OPT = "ssl.cipherSuites";
 
-  private static final ConfigDef CONFIG_DEF =
+  public static final ConfigDef CONFIG_DEF =
       new ConfigDef()
           .define(
               PROVIDER_OPT,
