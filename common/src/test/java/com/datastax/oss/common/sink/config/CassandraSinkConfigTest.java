@@ -194,7 +194,7 @@ class CassandraSinkConfigTest {
         .isInstanceOf(ConfigException.class)
         .hasMessageContaining(
             String.format(
-                "Invalid value foo for configuration %s: valid values are none, snappy, lz4",
+                "Invalid value foo for configuration %s: String must be one of (case insensitive): LZ4, NONE, SNAPPY",
                 COMPRESSION_OPT));
   }
 

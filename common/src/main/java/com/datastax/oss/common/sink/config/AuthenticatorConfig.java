@@ -48,8 +48,9 @@ public class AuthenticatorConfig extends AbstractConfig {
               PROVIDER_OPT,
               ConfigDef.Type.STRING,
               "None",
+              ConfigDef.ValidString.in("None", "PLAIN", "GSSAPI"),
               ConfigDef.Importance.HIGH,
-              "None | PLAIN | GSSAPI")
+              "Authentication provider")
           .define(
               USERNAME_OPT,
               ConfigDef.Type.STRING,

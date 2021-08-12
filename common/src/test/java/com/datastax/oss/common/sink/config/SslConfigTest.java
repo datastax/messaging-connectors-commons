@@ -211,9 +211,9 @@ class SslConfigTest {
     Map<String, String> props =
         ImmutableMap.<String, String>builder().put(PROVIDER_OPT, "foo").build();
     assertThatThrownBy(() -> new SslConfig(props))
-        .isInstanceOf(ConfigException.class)
+        .isInstanceOf(org.apache.kafka.common.config.ConfigException.class)
         .hasMessage(
             "Invalid value foo for configuration ssl.provider: "
-                + "valid values are None, JDK, OpenSSL");
+                + "String must be one of: None, JDK, OpenSSL");
   }
 }

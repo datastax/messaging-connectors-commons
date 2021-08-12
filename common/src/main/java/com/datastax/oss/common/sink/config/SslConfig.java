@@ -57,8 +57,9 @@ public class SslConfig extends AbstractConfig {
               PROVIDER_OPT,
               ConfigDef.Type.STRING,
               "None",
+              ConfigDef.ValidString.in("None", "JDK", "OpenSSL"),
               ConfigDef.Importance.HIGH,
-              "None | JDK | OpenSSL")
+              "SSL/TLS provider")
           .define(
               CIPHER_SUITES_OPT,
               ConfigDef.Type.LIST,

@@ -163,8 +163,9 @@ public class CassandraSinkConfig {
               COMPRESSION_OPT,
               ConfigDef.Type.STRING,
               "None",
+              ConfigDef.CaseInsensitiveValidString.in("NONE", "LZ4", "SNAPPY"),
               ConfigDef.Importance.HIGH,
-              "None | LZ4 | Snappy")
+              "Compression algorithm to use when issuing requests to the database server")
           .define(
               QUERY_EXECUTION_TIMEOUT_OPT,
               ConfigDef.Type.INT,
