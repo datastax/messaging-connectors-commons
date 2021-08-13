@@ -151,10 +151,10 @@ class AuthenticatorConfigTest {
     Map<String, String> props =
         ImmutableMap.<String, String>builder().put(PROVIDER_OPT, "foo").build();
     assertThatThrownBy(() -> new AuthenticatorConfig(props))
-        .isInstanceOf(ConfigException.class)
+        .isInstanceOf(org.apache.kafka.common.config.ConfigException.class)
         .hasMessage(
             String.format(
-                "Invalid value foo for configuration %s: valid values are None, PLAIN, GSSAPI",
+                "Invalid value foo for configuration %s: String must be one of: None, PLAIN, GSSAPI",
                 PROVIDER_OPT));
   }
 
