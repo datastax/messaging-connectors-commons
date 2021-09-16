@@ -39,21 +39,21 @@ public class AsciiDocGenerator {
 
   protected static void getConfigKeyAsciiDoc(
       ConfigDef configDef, ConfigDef.ConfigKey key, StringBuilder b) {
-    b.append("[#").append(key.name).append("]").append("\n");
+    b.append("``").append(key.name).append("`` +").append("\n");
     for (String docLine : key.documentation.split("\n")) {
       if (docLine.length() == 0) {
         continue;
       }
-      b.append(docLine).append("\n+\n");
+      b.append(docLine).append("\n\n");
     }
-    b.append("Type: ").append(getConfigValue(key, "Type")).append("\n");
+    b.append("* Type: ").append(getConfigValue(key, "Type")).append("\n");
     if (key.hasDefault()) {
-      b.append("Default: ").append(getConfigValue(key, "Default")).append("\n");
+      b.append("* Default: ").append(getConfigValue(key, "Default")).append("\n");
     }
     if (key.validator != null) {
-      b.append("Valid Values: ").append(getConfigValue(key, "Valid Values")).append("\n");
+      b.append("* Valid Values: ").append(getConfigValue(key, "Valid Values")).append("\n");
     }
-    b.append("Importance: ").append(getConfigValue(key, "Importance")).append("\n");
+    b.append("* Importance: ").append(getConfigValue(key, "Importance")).append("\n");
   }
 
   protected static String getConfigValue(ConfigDef.ConfigKey key, String headerName) {
@@ -120,8 +120,7 @@ public class AsciiDocGenerator {
       throws IOException {
     try (FileWriter fileWriter = new FileWriter(path.resolve(name).toFile())) {
       PrintWriter pw = new PrintWriter(fileWriter);
-      pw.append("= ").append(title).append("\n\n");
-      pw.append("== Parameters").append("\n\n");
+      pw.append("== ").append(title).append("\n\n");
       pw.append(toAscidoc(configDef));
       pw.flush();
     }
