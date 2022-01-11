@@ -40,8 +40,8 @@ public class ContactPointsValidator {
     if (!invalid.isEmpty()) {
       throw new ConfigException(
           String.format(
-              "Incorrect %s: %s",
-              CassandraSinkConfig.CONTACT_POINTS_OPT, String.join(",", invalid)));
+              "Incorrect %s: %s : The %s should only include DNS names or IP addresses (without the CQL port)." ,
+              CassandraSinkConfig.CONTACT_POINTS_OPT, String.join(",", invalid), CassandraSinkConfig.CONTACT_POINTS_OPT));
     }
   }
 
