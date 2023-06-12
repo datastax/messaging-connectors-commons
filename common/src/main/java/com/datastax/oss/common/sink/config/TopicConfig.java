@@ -16,6 +16,7 @@
 package com.datastax.oss.common.sink.config;
 
 import com.datastax.oss.common.sink.ConfigException;
+import com.datastax.oss.driver.internal.core.type.codec.registry.DefaultCodecRegistry;
 import com.datastax.oss.driver.shaded.guava.common.base.Splitter;
 import com.datastax.oss.dsbulk.codecs.api.ConversionContext;
 import com.datastax.oss.dsbulk.codecs.api.ConvertingCodecFactory;
@@ -139,7 +140,7 @@ public class TopicConfig extends AbstractConfig {
   }
 
   @NonNull
-  public ConvertingCodecFactory createCodecFactory() {
+  public ConvertingCodecFactory createCodecFactory(DefaultCodecRegistry defaultCodecRegistry) {
     ConversionContext context =
         new TextConversionContext()
             .setLocale(
@@ -150,7 +151,7 @@ public class TopicConfig extends AbstractConfig {
             .setTimeZone(ZoneId.of(getString(getTopicSettingPath(topicName, TIMEZONE_OPT))))
             .setTimeUnit(
                 TimeUnit.valueOf(getString(getTopicSettingPath(topicName, TIME_UNIT_OPT))));
-    return new ConvertingCodecFactory(context);
+    return new ConvertingCodecFactory(defaultCodecRegistry, context);
   }
 
   /**
