@@ -24,8 +24,9 @@
     <version>1.10.0</version>
     <relativePath/>
   </parent>
-  <version>1.11.0-vectors-preview</version>
-  <artifactId>dsbulk-codecs-text</artifactId>
+  <groupId>com.datastax.oss</groupId>
+  <version>1.0.15-SNAPSHOT</version>
+  <artifactId>dsbulk-codecs-text-messaging-components-fork</artifactId>
   <name>DataStax Bulk Loader - Codecs - Text - Vectors preview</name>
   <description>Text codecs for the DataStax Bulk Loader (String and JSON).</description>
   <dependencyManagement>
