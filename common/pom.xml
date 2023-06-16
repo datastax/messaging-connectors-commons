@@ -32,8 +32,10 @@
       <artifactId>dsbulk-codecs-api</artifactId>
     </dependency>
     <dependency>
+      <!-- forked in this repository temporary -->
       <groupId>com.datastax.oss</groupId>
       <artifactId>dsbulk-codecs-text</artifactId>
+      <version>1.11.0-vectors-preview</version>
     </dependency>
     <dependency>
       <groupId>com.datastax.oss</groupId>
