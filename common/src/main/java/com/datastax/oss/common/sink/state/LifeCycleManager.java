@@ -53,15 +53,10 @@ import com.datastax.oss.driver.api.core.metadata.Metadata;
 import com.datastax.oss.driver.api.core.metadata.schema.ColumnMetadata;
 import com.datastax.oss.driver.api.core.metadata.schema.KeyspaceMetadata;
 import com.datastax.oss.driver.api.core.metadata.schema.TableMetadata;
-import com.datastax.oss.driver.api.core.type.CqlVectorType;
-import com.datastax.oss.driver.api.core.type.DataType;
 import com.datastax.oss.driver.api.core.type.DataTypes;
-import com.datastax.oss.driver.api.core.type.codec.TypeCodec;
-import com.datastax.oss.driver.api.core.type.reflect.GenericType;
 import com.datastax.oss.driver.internal.core.auth.PlainTextAuthProvider;
 import com.datastax.oss.driver.internal.core.config.typesafe.DefaultDriverConfigLoader;
 import com.datastax.oss.driver.internal.core.config.typesafe.DefaultProgrammaticDriverConfigLoaderBuilder;
-import com.datastax.oss.driver.internal.core.type.codec.CqlVectorCodec;
 import com.datastax.oss.driver.internal.core.type.codec.registry.DefaultCodecRegistry;
 import com.datastax.oss.driver.shaded.guava.common.annotations.VisibleForTesting;
 import com.datastax.oss.driver.shaded.guava.common.collect.ImmutableMap;
@@ -69,7 +64,6 @@ import com.datastax.oss.dsbulk.codecs.api.ConvertingCodecFactory;
 import com.typesafe.config.Config;
 import com.typesafe.config.ConfigFactory;
 import edu.umd.cs.findbugs.annotations.NonNull;
-import edu.umd.cs.findbugs.annotations.Nullable;
 import java.net.InetSocketAddress;
 import java.nio.file.Path;
 import java.util.Collection;
@@ -97,20 +91,7 @@ public class LifeCycleManager {
       new ConcurrentHashMap<>();
   private static MetricRegistry metricRegistry = new MetricRegistry();
   private static final DefaultCodecRegistry CODEC_REGISTRY =
-      new DefaultCodecRegistry("default-registry") {
-
-        protected TypeCodec<?> createCodec(
-            @Nullable DataType cqlType,
-            @Nullable GenericType<?> javaType,
-            boolean isJavaCovariant) {
-          if (cqlType instanceof CqlVectorType) {
-            log.info("Automatically Registering codec for CqlVectorType {}", cqlType);
-            CqlVectorType vectorType = (CqlVectorType) cqlType;
-            return new CqlVectorCodec<>(vectorType, codecFor(vectorType.getSubtype()));
-          }
-          return super.createCodec(cqlType, javaType, isJavaCovariant);
-        }
-      };
+      new DefaultCodecRegistry("default-registry");
 
   /** This is a utility class that no one should instantiate. */
   private LifeCycleManager() {}

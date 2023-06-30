@@ -16,21 +16,23 @@
 package com.datastax.oss.dsbulk.codecs.text.json;
 
 import com.datastax.oss.driver.api.core.data.CqlVector;
-import com.datastax.oss.driver.internal.core.type.codec.CqlVectorCodec;
+import com.datastax.oss.driver.internal.core.type.codec.VectorCodec;
 import com.datastax.oss.dsbulk.codecs.api.ConvertingCodec;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-public class JsonNodeToVectorCodec<SubtypeT> extends JsonNodeConvertingCodec<CqlVector<SubtypeT>> {
+public class JsonNodeToVectorCodec<SubtypeT extends Number>
+    extends JsonNodeConvertingCodec<CqlVector<SubtypeT>> {
 
   private final ConvertingCodec<JsonNode, SubtypeT> subtypeCodec;
   private final ObjectMapper objectMapper;
 
   public JsonNodeToVectorCodec(
-      CqlVectorCodec<SubtypeT> targetCodec,
+      VectorCodec<SubtypeT> targetCodec,
       ConvertingCodec<JsonNode, SubtypeT> subtypeCodec,
       ObjectMapper objectMapper,
       List<String> nullStrings) {
@@ -42,17 +44,17 @@ public class JsonNodeToVectorCodec<SubtypeT> extends JsonNodeConvertingCodec<Cql
   @Override
   public CqlVector<SubtypeT> externalToInternal(JsonNode jsonNode) {
     if (jsonNode == null || !jsonNode.isArray()) return null;
-    CqlVector.Builder<SubtypeT> builder = CqlVector.builder();
+    List<SubtypeT> result = new ArrayList<>();
     for (Iterator<JsonNode> it = jsonNode.elements(); it.hasNext(); )
-      builder.add(subtypeCodec.externalToInternal(it.next()));
-    return builder.build();
+      result.add(subtypeCodec.externalToInternal(it.next()));
+    return CqlVector.newInstance(result);
   }
 
   @Override
   public JsonNode internalToExternal(CqlVector<SubtypeT> value) {
     if (value == null) return null;
     ArrayNode root = objectMapper.createArrayNode();
-    for (SubtypeT element : value.getValues()) {
+    for (SubtypeT element : value) {
       root.add(subtypeCodec.internalToExternal(element));
     }
     return root;
