@@ -41,7 +41,7 @@
     <java.release.version>8</java.release.version>
     <kafka.connect.version>2.4.0</kafka.connect.version>
     <caffeine.version>2.6.2</caffeine.version>
-    <oss.driver.version>4.16.0</oss.driver.version>
+    <oss.driver.version>4.16.1-SNAPSHOT</oss.driver.version>
     <dsbulk.version>1.10.0</dsbulk.version>
     <reactive-streams.version>1.0.3</reactive-streams.version>
     <guava.version>25.1-jre</guava.version>

@@ -19,11 +19,10 @@ import static com.datastax.oss.dsbulk.codecs.text.json.JsonCodecUtils.JSON_NODE_
 import static com.datastax.oss.dsbulk.tests.assertions.TestAssertions.assertThat;
 
 import com.datastax.oss.driver.api.core.data.CqlVector;
-import com.datastax.oss.driver.api.core.type.CqlVectorType;
 import com.datastax.oss.driver.api.core.type.DataTypes;
 import com.datastax.oss.driver.api.core.type.codec.TypeCodecs;
 import com.datastax.oss.driver.api.core.type.reflect.GenericType;
-import com.datastax.oss.driver.internal.core.type.codec.CqlVectorCodec;
+import com.datastax.oss.driver.internal.core.type.codec.VectorCodec;
 import com.datastax.oss.driver.shaded.guava.common.collect.Lists;
 import com.datastax.oss.dsbulk.codecs.api.ConvertingCodecFactory;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -34,9 +33,9 @@ import org.junit.jupiter.api.Test;
 
 public class JsonNodeToVectorCodecTest {
   private final ArrayList<Float> values = Lists.newArrayList(1.1f, 2.2f, 3.3f, 4.4f, 5.5f);
-  private final CqlVector vector = CqlVector.builder().addAll(values).build();
-  private final CqlVectorCodec vectorCodec =
-      new CqlVectorCodec(new CqlVectorType(DataTypes.FLOAT, 5), TypeCodecs.FLOAT);
+  private final CqlVector vector = CqlVector.newInstance(values);
+  private final VectorCodec vectorCodec =
+      new VectorCodec(DataTypes.vectorOf(DataTypes.FLOAT, 5), TypeCodecs.FLOAT);
   private final ArrayNode vectorDoc;
 
   private final ConvertingCodecFactory factory = new ConvertingCodecFactory();
@@ -87,8 +86,8 @@ public class JsonNodeToVectorCodecTest {
     tooFew.remove(0);
 
     assertThat(dsbulkCodec)
-        .cannotConvertFromInternal(CqlVector.builder().addAll(tooMany).build())
-        .cannotConvertFromInternal(CqlVector.builder().addAll(tooFew).build())
+        .cannotConvertFromInternal(CqlVector.newInstance((tooMany)))
+        .cannotConvertFromInternal(CqlVector.newInstance((tooFew)))
         .cannotConvertFromInternal("not a valid vector");
   }
 }
