@@ -624,7 +624,7 @@ public class LifeCycleManager {
   }
 
   /**
-   * Prepare insert or update (depending on whether or not the table is a COUNTER table), and delete
+   * Prepare insert or update (depending on whether the table is a COUNTER table), and delete
    * statements asynchronously.
    *
    * @param session the session

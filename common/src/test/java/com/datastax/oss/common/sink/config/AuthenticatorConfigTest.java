@@ -154,7 +154,7 @@ class AuthenticatorConfigTest {
         .isInstanceOf(org.apache.kafka.common.config.ConfigException.class)
         .hasMessage(
             String.format(
-                "Invalid value foo for configuration %s: String must be one of: None, PLAIN, GSSAPI",
+                "Invalid value foo for configuration %s: String must be one of: None, PLAIN, GSSAPI, OIDC",
                 PROVIDER_OPT));
   }
 

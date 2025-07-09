@@ -24,11 +24,15 @@ import com.datastax.oss.driver.shaded.guava.common.collect.ImmutableMap;
 import edu.umd.cs.findbugs.annotations.Nullable;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import org.apache.kafka.common.config.AbstractConfig;
 import org.apache.kafka.common.config.ConfigDef;
+import org.apache.kafka.common.config.types.Password;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,7 +43,13 @@ public class AuthenticatorConfig extends AbstractConfig {
   public static final String PASSWORD_OPT = "auth.password";
   public static final String KEYTAB_OPT = "auth.gssapi.keyTab";
   public static final String PRINCIPAL_OPT = "auth.gssapi.principal";
-  public static final String SERVICE_OPT = "auth.gssapi.service";
+  public static final String SERVICE_OPT = "auth.gssapi.cservice";
+  public static final String OIDC_ISSUER_OPT = "auth.oidc.issuer";
+  public static final String OIDC_CLIENT_ID_OPT = "auth.oidc.client_id";
+  public static final String OIDC_CLIENT_SECRET_OPT = "auth.oidc.client_secret";
+  public static final String OIDC_USE_TLS_OPT = "auth.oidc.use_tls";
+  public static final String OIDC_TRUSTSTORE_PATH_OPT = "auth.oidc.truststore_path";
+  public static final String OIDC_TRUSTSTORE_PASSWORD_OPT = "auth.oidc.truststore_password";
 
   private static final Logger log = LoggerFactory.getLogger(AuthenticatorConfig.class);
   public static final ConfigDef CONFIG_DEF =
@@ -48,7 +58,7 @@ public class AuthenticatorConfig extends AbstractConfig {
               PROVIDER_OPT,
               ConfigDef.Type.STRING,
               "None",
-              ConfigDef.ValidString.in("None", "PLAIN", "GSSAPI"),
+              ConfigDef.ValidString.in("None", "PLAIN", "GSSAPI", "OIDC"),
               ConfigDef.Importance.HIGH,
               "Authentication provider")
           .define(
@@ -80,7 +90,43 @@ public class AuthenticatorConfig extends AbstractConfig {
               ConfigDef.Type.STRING,
               "dse",
               ConfigDef.Importance.HIGH,
-              "SASL service name to use for GSSAPI provider authentication");
+              "SASL service name to use for GSSAPI provider authentication")
+          .define(
+              OIDC_ISSUER_OPT,
+              ConfigDef.Type.STRING,
+              "",
+              ConfigDef.Importance.HIGH,
+              "OIDC Authentication server url")
+          .define(
+              OIDC_CLIENT_ID_OPT,
+              ConfigDef.Type.STRING,
+              "",
+              ConfigDef.Importance.HIGH,
+              "OIDC Client Id to use for authentication")
+          .define(
+              OIDC_CLIENT_SECRET_OPT,
+              ConfigDef.Type.PASSWORD,
+              "",
+              ConfigDef.Importance.HIGH,
+              "OIDC Client Secret to use for authentication")
+          .define(
+              OIDC_USE_TLS_OPT,
+              ConfigDef.Type.BOOLEAN,
+              true,
+              ConfigDef.Importance.HIGH,
+              "Set to false to disable TLS encrypted connections. Defaults to true.")
+          .define(
+              OIDC_TRUSTSTORE_PATH_OPT,
+              ConfigDef.Type.STRING,
+              "",
+              ConfigDef.Importance.HIGH,
+              "Path to the truststore file containing the OIDC issuer's certificate.")
+          .define(
+              OIDC_TRUSTSTORE_PASSWORD_OPT,
+              ConfigDef.Type.PASSWORD,
+              null,
+              ConfigDef.Importance.HIGH,
+              "Truststore file password containing the OIDC issuer's certificate.");
 
   @Nullable private final Path keyTabPath;
 
@@ -101,8 +147,27 @@ public class AuthenticatorConfig extends AbstractConfig {
       if (getService().isEmpty()) {
         throw new ConfigException(SERVICE_OPT, "<empty>", "is required");
       }
-
       assertAccessibleFile(keyTabPath, KEYTAB_OPT);
+    }
+
+    if (provider == Provider.OIDC) {
+      if (getString(OIDC_ISSUER_OPT).isEmpty()) {
+        throw new ConfigException(OIDC_ISSUER_OPT, "<empty>", "is required");
+      }
+
+      try {
+        new URI(getString(OIDC_ISSUER_OPT));
+      } catch (URISyntaxException e) {
+        throw new ConfigException(
+            OIDC_ISSUER_OPT, getString(OIDC_ISSUER_OPT), "is not a valid URI: " + e.getMessage());
+      }
+
+      if (getString(OIDC_CLIENT_ID_OPT).isEmpty()) {
+        throw new ConfigException(OIDC_CLIENT_ID_OPT, "<empty>", "is required");
+      }
+      if (getPassword(OIDC_CLIENT_SECRET_OPT).value().isEmpty()) {
+        throw new ConfigException(OIDC_CLIENT_SECRET_OPT, "<empty>", "is required");
+      }
     }
   }
 
@@ -139,6 +204,13 @@ public class AuthenticatorConfig extends AbstractConfig {
         mutated.put(PRINCIPAL_OPT, getPrincipalFromKeyTab(keyTabPath.toString()));
       }
     }
+
+    if ("OIDC".equals(provider)) {
+      if (!mutated.containsKey(OIDC_USE_TLS_OPT) || mutated.get(OIDC_USE_TLS_OPT).isEmpty()) {
+        mutated.put(OIDC_USE_TLS_OPT, "true");
+      }
+    }
+
     return ImmutableMap.<String, String>builder().putAll(mutated).build();
   }
 
@@ -191,7 +263,7 @@ public class AuthenticatorConfig extends AbstractConfig {
       return Provider.valueOf(providerString);
     } catch (IllegalArgumentException e) {
       throw new ConfigException(
-          PROVIDER_OPT, providerString, "valid values are None, PLAIN, GSSAPI");
+          PROVIDER_OPT, providerString, "valid values are None, PLAIN, GSSAPI, OIDC");
     }
   }
 
@@ -216,6 +288,35 @@ public class AuthenticatorConfig extends AbstractConfig {
     return getString(SERVICE_OPT);
   }
 
+  public URI getOIDCIssuer() {
+    try {
+      return new URI(getString(OIDC_ISSUER_OPT));
+    } catch (URISyntaxException e) {
+      // This should never happen because we validate the URI in the constructor.
+      return null;
+    }
+  }
+
+  public String getOIDCClientId() {
+    return getString(OIDC_CLIENT_ID_OPT);
+  }
+
+  public String getOIDCClientSecret() {
+    return getPassword(OIDC_CLIENT_SECRET_OPT).value();
+  }
+
+  public boolean getOIDCUseTLS() {
+    return getBoolean(OIDC_USE_TLS_OPT);
+  }
+
+  public Path getOIDCTruststorePath() {
+    return getFilePath(getString(OIDC_TRUSTSTORE_PATH_OPT));
+  }
+
+  public Password getOIDCTruststorePassword() {
+    return getPassword(OIDC_TRUSTSTORE_PASSWORD_OPT);
+  }
+
   @Override
   public String toString() {
     return configToString(
@@ -226,12 +327,16 @@ public class AuthenticatorConfig extends AbstractConfig {
         PASSWORD_OPT,
         KEYTAB_OPT,
         PRINCIPAL_OPT,
-        SERVICE_OPT);
+        SERVICE_OPT,
+        OIDC_ISSUER_OPT,
+        OIDC_CLIENT_ID_OPT,
+        OIDC_CLIENT_SECRET_OPT);
   }
 
   public enum Provider {
     None,
     PLAIN,
-    GSSAPI
+    GSSAPI,
+    OIDC
   }
 }
