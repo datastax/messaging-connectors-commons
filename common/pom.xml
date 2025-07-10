@@ -70,6 +70,10 @@
       </exclusions>
     </dependency>
     <dependency>
+      <groupId>com.datastax.db</groupId>
+      <artifactId>db-advanced-auth-client-plugin</artifactId>
+    </dependency>
+    <dependency>
       <groupId>org.apache.kafka</groupId>
       <artifactId>kafka-clients</artifactId>
     </dependency>

@@ -37,11 +37,12 @@
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <java.version>1.8</java.version>
-    <java.release.version>8</java.release.version>
+    <java.version>11</java.version>
+    <java.release.version>11</java.release.version>
     <kafka.connect.version>2.4.0</kafka.connect.version>
     <caffeine.version>2.6.2</caffeine.version>
     <oss.driver.version>4.16.0</oss.driver.version>
+    <datastax.advanced-auth-client-plugin.version>1.0.1-SNAPSHOT</datastax.advanced-auth-client-plugin.version>
     <dsbulk.version>1.10.0</dsbulk.version>
     <reactive-streams.version>1.0.3</reactive-streams.version>
     <guava.version>25.1-jre</guava.version>
@@ -154,6 +155,11 @@
         <groupId>com.datastax.oss</groupId>
         <artifactId>java-driver-shaded-guava</artifactId>
         <version>${guava.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>com.datastax.db</groupId>
+        <artifactId>db-advanced-auth-client-plugin</artifactId>
+        <version>${datastax.advanced-auth-client-plugin.version}</version>
       </dependency>
       <dependency>
         <groupId>org.reactivestreams</groupId>
@@ -287,26 +293,6 @@ limitations under the License.]]></inlineHeader>
           <version>1.14</version>
         </plugin>
         <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>animal-sniffer-maven-plugin</artifactId>
-          <version>1.16</version>
-          <executions>
-            <execution>
-              <id>check-jdk8</id>
-              <goals>
-                <goal>check</goal>
-              </goals>
-              <configuration>
-                <signature>
-                  <groupId>org.codehaus.mojo.signature</groupId>
-                  <artifactId>java18</artifactId>
-                  <version>1.0</version>
-                </signature>
-              </configuration>
-            </execution>
-          </executions>
-        </plugin>
-        <plugin>
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-shade-plugin</artifactId>
           <version>3.2.3</version>
@@ -429,10 +415,6 @@ limitations under the License.]]></inlineHeader>
       <plugin>
         <groupId>com.mycila</groupId>
         <artifactId>license-maven-plugin</artifactId>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>animal-sniffer-maven-plugin</artifactId>
       </plugin>
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
