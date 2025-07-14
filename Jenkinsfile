@@ -206,7 +206,7 @@ pipeline {
   environment {
     OS_VERSION = 'ubuntu/focal64/java-driver'
     JABBA_SHELL = '/usr/lib/jabba/jabba.sh'
-    JABBA_VERSION = '1.8'
+    JABBA_VERSION = 'openjdk@1.11'
     CCM_ENVIRONMENT_SHELL = '/usr/local/bin/ccm_environment.sh'
     // always run long tests when generating the distribution tarball
     RUN_LONG_TESTS = "${params.RUN_LONG_TESTS || params.GENERATE_DISTRO}"
