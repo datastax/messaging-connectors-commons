@@ -37,8 +37,10 @@ import edu.umd.cs.findbugs.annotations.NonNull;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -68,8 +70,14 @@ public class InstanceState {
     this.requestBarrier = new Semaphore(getConfig().getMaxConcurrentRequests());
     tasks = Sets.newConcurrentHashSet();
     mappingExecutor =
-        Executors.newFixedThreadPool(
-            8, new ThreadFactoryBuilder().setNameFormat("mapping-%d").build());
+        new ThreadPoolExecutor(
+            8,
+            32,
+            60L,
+            TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(1024),
+            new ThreadFactoryBuilder().setNameFormat("mapping-%d").build(),
+            new ThreadPoolExecutor.CallerRunsPolicy());
     // Add driver metrics to our registry.
     session
         .getMetrics()
