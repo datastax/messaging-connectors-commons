@@ -31,6 +31,8 @@ import static com.datastax.oss.driver.api.core.config.DefaultDriverOption.SSL_TR
 import static com.datastax.oss.driver.api.core.config.DefaultDriverOption.SSL_TRUSTSTORE_PATH;
 
 import com.codahale.metrics.MetricRegistry;
+import com.datastax.db.driver.api.plugin.auth.OIDCClientCredentialsAuthProvider;
+import com.datastax.db.driver.api.plugin.config.OIDCDriverOption;
 import com.datastax.dse.driver.api.core.config.DseDriverOption;
 import com.datastax.dse.driver.internal.core.auth.DseGssApiAuthProvider;
 import com.datastax.oss.common.sink.AbstractSinkTask;
@@ -620,11 +622,32 @@ public class LifeCycleManager {
           .withStringMap(
               AUTH_PROVIDER_SASL_PROPERTIES, ImmutableMap.of("javax.security.sasl.qop", "auth"))
           .withStringMap(DseDriverOption.AUTH_PROVIDER_LOGIN_CONFIGURATION, loginConfig);
+    } else if (authConfig.getProvider() == AuthenticatorConfig.Provider.OIDC) {
+      configLoaderBuilder
+          .withClass(AUTH_PROVIDER_CLASS, OIDCClientCredentialsAuthProvider.class)
+          .withString(
+              OIDCDriverOption.AUTH_PROVIDER_OIDC_ISSUER, authConfig.getOIDCIssuer().toString())
+          .withString(OIDCDriverOption.AUTH_PROVIDER_OIDC_CLIENT_ID, authConfig.getOIDCClientId())
+          .withString(
+              OIDCDriverOption.AUTH_PROVIDER_OIDC_CLIENT_SECRET, authConfig.getOIDCClientSecret())
+          .withBoolean(OIDCDriverOption.AUTH_PROVIDER_OIDC_USE_TLS, authConfig.getOIDCUseTLS());
+
+      if (authConfig.getOIDCTruststorePath() != null) {
+        configLoaderBuilder.withString(
+            OIDCDriverOption.AUTH_PROVIDER_OIDC_TRUSTSTORE_PATH,
+            authConfig.getOIDCTruststorePath().toString());
+
+        if (authConfig.getOIDCTruststorePassword() != null) {
+          configLoaderBuilder.withString(
+              OIDCDriverOption.AUTH_PROVIDER_OIDC_TRUSTSTORE_PASSWORD,
+              authConfig.getOIDCTruststorePassword().value());
+        }
+      }
     }
   }
 
   /**
-   * Prepare insert or update (depending on whether or not the table is a COUNTER table), and delete
+   * Prepare insert or update (depending on whether the table is a COUNTER table), and delete
    * statements asynchronously.
    *
    * @param session the session

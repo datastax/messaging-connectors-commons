@@ -22,7 +22,7 @@
     <artifactId>dsbulk-codecs</artifactId>
     <groupId>com.datastax.oss</groupId>
     <version>1.10.0</version>
-    <relativePath />
+    <relativePath/>
   </parent>
   <groupId>com.datastax.oss</groupId>
   <version>1.0.16-SNAPSHOT</version>
@@ -118,13 +118,6 @@
           <release>8</release>
           <source>8</source>
           <target>8</target>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>animal-sniffer-maven-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
         </configuration>
       </plugin>
     </plugins>
