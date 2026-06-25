@@ -238,6 +238,10 @@ public class CassandraSinkConfig {
       for (Map.Entry<String, String> entry : settings.entrySet()) {
         String name = entry.getKey();
         if (name.startsWith("topic.")) {
+          // Skip Confluent Cloud injected topic creation properties
+          if (name.startsWith("topic.creation.")) {
+            continue;
+          }
           String topicName = tryMatchTopicName(name);
           Map<String, String> topicMap =
               topicSettings.computeIfAbsent(topicName, t -> new HashMap<>());
