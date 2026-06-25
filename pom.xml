@@ -459,15 +459,13 @@ limitations under the License.]]></inlineHeader>
         </executions>
       </plugin>
       <plugin>
-        <groupId>org.sonatype.plugins</groupId>
-        <artifactId>nexus-staging-maven-plugin</artifactId>
-        <version>1.6.8</version>
+        <groupId>org.sonatype.central</groupId>
+        <artifactId>central-publishing-maven-plugin</artifactId>
+        <version>0.6.0</version>
         <extensions>true</extensions>
         <configuration>
-          <serverId>ossrh</serverId>
-          <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-          <autoReleaseAfterClose>false</autoReleaseAfterClose>
-          <skipLocalStaging>true</skipLocalStaging>
+          <publishingServerId>central</publishingServerId>
+          <autoPublish>false</autoPublish>
         </configuration>
       </plugin>
     </plugins>
@@ -658,11 +656,6 @@ limitations under the License.]]></inlineHeader>
     </repository>
   </repositories>
   <distributionManagement>
-    <!-- releases go to Maven central -->
-    <repository>
-      <id>ossrh</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
     <snapshotRepository>
       <id>datastax-snapshots-local</id>
       <name>DataStax Local Snapshots</name>
